@@ -3,7 +3,7 @@ export const config = { api: { bodyParser: { sizeLimit: '4.5mb' } } };
 export default async function handler(req, res) {
   if (!process.env.ADMIN_KEY || req.headers['x-admin-key'] !== process.env.ADMIN_KEY) return res.status(401).json({ error: '관리자 키가 필요해요' });
   if (req.method !== 'POST') return res.status(405).end();
-  const token = process.env.BLOB_READ_WRITE_TOKEN || Object.entries(process.env).find(([k]) => k.endsWith('_READ_WRITE_TOKEN') && k.includes('BLOB'))?.[1];
+  const token = process.env.BLOB_READ_WRITE_TOKEN || Object.entries(process.env).find(([k]) => k.endsWith('READ_WRITE_TOKEN'))?.[1];
   if (!token) return res.status(503).json({ error: '파일 저장소(Blob)가 연결되지 않았어요' });
   const b = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
   if (!b.data || !b.name) return res.status(400).json({ error: '파일이 없어요' });
