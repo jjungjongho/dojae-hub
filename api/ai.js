@@ -11,7 +11,7 @@ const PROMPT = (today) => `너는 고교단계 일학습병행 지원단(한양�
 실적 항목(cat): ${JSON.stringify(CATS)}
 일정 종류(kind): ${JSON.stringify(KINDS)}
 규칙:
-- notice: 도제학교 선생님에게 알릴 내용이 있으면 1개. title은 공문 제목을 짧게. body는 핵심 3줄 + "학교가 할 일"을 줄바꿈으로. 제출기한이 있으면 deadline(YYYY-MM-DD). 일반 대중에게도 알릴 내용이면 audience "all", 아니면 "teachers". 내부 행정(예산, 식사권 등)이면 notice는 null.
+- notice: 반드시 1개 만든다(null 금지). title은 공문 제목을 짧게. body는 핵심 3줄 + 학교가 할 일이 있으면 "학교가 할 일: ..."을 줄바꿈으로. 제출·참여 기한이 있으면 deadline(YYYY-MM-DD). audience: 학생·학부모 등 누구나 알아도 되는 내용이면 "all", 도제학교 선생님이 알아야 하면 "teachers", 지원단 내부 행정(예산, 사업비, 식사권, 내부 보고 등)이면 "internal". 붙임이 없어 내용을 알 수 없어도 공문 본문만으로 요약한다.
 - events: 날짜가 정해진 행사·실사·회의·연수·설명회. date(YYYY-MM-DD), time(HH:MM 또는 ""), place, kind, schools(해당 학교 id 배열, 전체면 []), prepare(학교가 준비할 것), public(학생·학부모 공개 행사면 true).
 - logs: 이 공문이 지원단이 이미 수행한 활동의 결과보고·실적이면 실적 기록. date, cat, school(id 또는 ""), company(기업명 또는 ""), note(한 줄), count(횟수).
 - 개인 이름·전화번호·학생 정보는 넣지 마라. 확실하지 않은 날짜는 만들지 말고 비워라.

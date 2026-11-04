@@ -49,7 +49,7 @@ export default async function handler(req, res) {
     const [notices, events, requests, confirms] = await Promise.all([all('notice'), all('event'), all('request'), all('confirm')]);
     const mine = new Set(confirms.filter(c => c.school === school).map(c => c.notice));
     return res.json({ school, toggles,
-      notices: notices.map(n => ({ ...n, confirmed: mine.has(n.id) })),
+      notices: notices.filter(n => n.audience !== 'internal').map(n => ({ ...n, confirmed: mine.has(n.id) })),
       events: events.filter(e => !e.schools?.length || e.schools.includes(school)),
       requests: requests.filter(r => r.school === school) });
   }
@@ -73,7 +73,7 @@ export default async function handler(req, res) {
     return res.json({ notices, events, requests, confirms, consults, logs, toggles, codes: Object.fromEntries(SCHOOLS.map(s => [s, codeOf(s)])) });
   }
   if (req.method !== 'POST') return res.status(405).end();
-  if (a === 'notice') { const o = { id: b.id || newId(), at: b.at || now(), title: clip(b.title, 200), body: clip(b.body, 5000), deadline: clip(b.deadline, 20), audience: b.audience === 'all' ? 'all' : 'teachers', link: clip(b.link, 500) }; await put('notice', o); return res.json(o); }
+  if (a === 'notice') { const o = { id: b.id || newId(), at: b.at || now(), title: clip(b.title, 200), body: clip(b.body, 5000), deadline: clip(b.deadline, 20), audience: ['all', 'teachers', 'internal'].includes(b.audience) ? b.audience : 'teachers', link: clip(b.link, 500) }; await put('notice', o); return res.json(o); }
   if (a === 'event') { const o = { id: b.id || newId(), at: now(), title: clip(b.title, 200), kind: clip(b.kind, 40), date: clip(b.date, 20), time: clip(b.time, 20), place: clip(b.place, 200), prepare: clip(b.prepare, 1000), schools: (b.schools || []).filter(s => SCHOOLS.includes(s)), public: !!b.public }; await put('event', o); return res.json(o); }
   if (a === 'log') { const o = { id: b.id || newId(), at: now(), date: clip(b.date, 20), cat: clip(b.cat, 60), school: SCHOOLS.includes(b.school) ? b.school : '', company: clip(b.company, 100), note: clip(b.note, 1000), count: Math.max(1, +b.count || 1) }; await put('log', o); return res.json(o); }
   if (a === 'reqstatus') { const r = await get('request', b.id); if (!r) return res.status(404).end(); r.status = clip(b.status, 20); r.reply = clip(b.reply, 1000); await put('request', r);
