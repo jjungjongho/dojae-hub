@@ -31,8 +31,10 @@ export default async function handler(req, res) {
 
   // ---------- public ----------
   if (a === 'public') {
-    const [notices, events] = await Promise.all([all('notice'), all('event')]);
-    return res.json({ notices: notices.filter(n => n.audience === 'all').slice(0, 20), events: events.filter(e => e.public), toggles });
+    const [notices, events, logs] = await Promise.all([all('notice'), all('event'), all('log')]);
+    const y = String(new Date().getFullYear()), cats = {};
+    let total = 0; logs.filter(l => String(l.date || l.at || '').startsWith(y)).forEach(l => { const c = +l.count || 1; total += c; cats[l.cat || '기타'] = (cats[l.cat || '기타'] || 0) + c; });
+    return res.json({ notices: notices.filter(n => n.audience === 'all').slice(0, 20), events: events.filter(e => e.public), toggles, stats: { year: y, total, cats } });
   }
   if (a === 'consult' && req.method === 'POST') {
     if (!b.consent || !SCHOOLS.includes(b.school) || !b.phone) return res.status(400).json({ error: '필수 항목을 확인해 주세요' });
