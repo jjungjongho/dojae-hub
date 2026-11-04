@@ -46,14 +46,14 @@ export default async function handler(req, res) {
   // ---------- school (invite code) ----------
   if (a === 'login') { const s = schoolOf(b.code); return s ? res.json({ school: s }) : res.status(401).json({ error: '코드가 맞지 않아요' }); }
   const school = schoolOf(req.headers['x-school-code']);
-  if (['school', 'confirm', 'request', 'consults', 'submit'].includes(a) && !school) return res.status(401).json({ error: '학교 코드가 필요해요' });
+  if (['school', 'confirm', 'request', 'consults', 'submit', 'feedback'].includes(a) && !school) return res.status(401).json({ error: '학교 코드가 필요해요' });
   if (a === 'school') {
-    const [notices, events, requests, confirms, submits] = await Promise.all([all('notice'), all('event'), all('request'), all('confirm'), all('submit')]);
+    const [notices, events, requests, confirms, submits, feedbacks] = await Promise.all([all('notice'), all('event'), all('request'), all('confirm'), all('submit'), all('feedback')]);
     const mine = new Set(confirms.filter(c => c.school === school).map(c => c.notice));
     return res.json({ school, toggles,
       notices: notices.filter(n => n.audience !== 'internal' && (!n.schools?.length || n.schools.includes(school))).map(n => ({ ...n, confirmed: mine.has(n.id) })),
       events: events.filter(e => !e.schools?.length || e.schools.includes(school)),
-      requests: requests.filter(r => r.school === school), submits: submits.filter(x => x.school === school) });
+      requests: requests.filter(r => r.school === school), submits: submits.filter(x => x.school === school), feedbacks: feedbacks.filter(x => x.school === school).map(x => x.event) });
   }
   if (a === 'confirm' && req.method === 'POST') {
     const id = school + ':' + clip(b.notice, 40);
@@ -72,13 +72,19 @@ export default async function handler(req, res) {
     const o = { id: newId(), at: now(), school, kind: clip(b.kind, 40), notice: clip(b.notice, 40), noticeTitle: clip(b.noticeTitle, 200), memo: clip(b.memo, 1000), files, status: '접수', reply: '' };
     await put('submit', o); return res.json({ ok: true });
   }
+  if (a === 'feedback' && req.method === 'POST') {
+    const id = school + ':' + clip(b.event, 40);
+    const o = { id, at: now(), school, event: clip(b.event, 40), eventTitle: clip(b.eventTitle, 200), date: clip(b.date, 20), score: Math.min(5, Math.max(1, +b.score || 0)), good: clip(b.good, 1000), wish: clip(b.wish, 1000) };
+    await put('feedback', o); return res.json({ ok: true });
+  }
   if (a === 'consults') return res.json({ consults: (await all('consult')).filter(c => c.school === school) });
 
   // ---------- admin ----------
   if (!isAdmin) return res.status(401).json({ error: '관리자 키가 필요해요' });
   if (a === 'admin') {
-    const [notices, events, requests, confirms, consults, logs, submits] = await Promise.all(['notice', 'event', 'request', 'confirm', 'consult', 'log', 'submit'].map(all));
-    return res.json({ notices, events, requests, confirms, consults, logs, submits, toggles, codes: Object.fromEntries(SCHOOLS.map(s => [s, codeOf(s)])) });
+    const [notices, events, requests, confirms, consults, logs, submits, feedbacks] = await Promise.all(['notice', 'event', 'request', 'confirm', 'consult', 'log', 'submit', 'feedback'].map(all));
+    const ah = (await cmd('HGETALL', 'hub:aistat')) || []; const aistat = {}; for (let i = 0; i < ah.length; i += 2) aistat[ah[i]] = +ah[i + 1];
+    return res.json({ notices, events, requests, confirms, consults, logs, submits, feedbacks, aistat, toggles, codes: Object.fromEntries(SCHOOLS.map(s => [s, codeOf(s)])) });
   }
   if (req.method !== 'POST') return res.status(405).end();
   if (a === 'notice') { const o = { id: b.id || newId(), at: b.at || now(), title: clip(b.title, 200), body: clip(b.body, 5000), deadline: clip(b.deadline, 20), audience: ['all', 'teachers', 'internal'].includes(b.audience) ? b.audience : 'teachers', link: clip(b.link, 500), schools: (Array.isArray(b.schools) ? b.schools : []).filter(x => SCHOOLS.includes(x)), files: (Array.isArray(b.files) ? b.files : []).slice(0, 20).map(f => ({ name: clip(f.name, 200), url: clip(f.url, 600) })).filter(f => /^https:\/\//.test(f.url)) }; await put('notice', o); return res.json(o); }

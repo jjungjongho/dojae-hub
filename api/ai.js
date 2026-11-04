@@ -1,9 +1,11 @@
 // Reads uploaded 공문 PDFs with an AI model and proposes notices, events and support logs.
 // Admin only. Uses ANTHROPIC_API_KEY (Claude) if set, otherwise GEMINI_API_KEY.
+import { hasRedis, cmd } from './_redis.js';
+const stat = async k => { try { if (hasRedis()) await cmd('HINCRBY', 'hub:aistat', new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 7) + ':' + k, '1'); } catch {} };
 export const config = { api: { bodyParser: { sizeLimit: '4.5mb' } } };
 
 const SCHOOLS = { ggm: '경기기계공업고등학교', kwai: '광운인공지능고등학교', dukil: '덕일전자공업고등학교', mungok: '문곡고등학교', magnet: '서울매그넷고등학교', design: '서울디자인고등학교', seoil: '서일문화예술고등학교', yongsan: '용산철도고등학교', eunpyeong: '은평메디텍고등학교', mobility: '한국모빌리티고등학교(구 의정부공업고등학교)' };
-const CATS = ['학습기업 발굴지원', '신기술체험캠프', '산업안전·AI 활용 지원', '지원단 간 협업', '경력개발 지원(P-TECH·4년제 연계)', '전담인력 전문성 강화', '커뮤니티 운영', '도제준비과정 운영지원(잡데이·컨설팅·기업투어)', '방문 모니터링·유선/방문 컨설팅', '도제학교·일학습병행 홍보', '운영위원회 개최', '기타'];
+const CATS = ['학습기업 발굴지원', '신기술체험캠프', '산업안전 지원', 'AI 활용 지원', '지원단 간 협업', '경력개발 지원(P-TECH·4년제 연계)', '전담인력 전문성 강화', '커뮤니티 운영', '도제준비과정 운영지원(잡데이·컨설팅·기업투어)', '방문 모니터링·유선/방문 컨설팅', '도제학교·일학습병행 홍보', '운영위원회 개최', '기타'];
 const KINDS = ['현장실사', '기업 발굴 방문', '학교 컨설팅', '공단 점검', '커뮤니티', '연수·설명회', '신기술체험캠프', '잡데이·기업투어', '운영위원회', '기타'];
 
 const PROMPT = (today) => `너는 고교단계 일학습병행 지원단(한양여대)의 업무 보조다. 첨부된 공문과 붙임 문서를 읽고, 지원단 홈페이지에 올릴 항목을 JSON으로만 답하라. 오늘 날짜: ${today}.
@@ -52,6 +54,7 @@ export default async function handler(req, res) {
     } else return res.status(503).json({ error: 'AI 키가 없어요 (Vercel 환경변수 ANTHROPIC_API_KEY 또는 GEMINI_API_KEY)' });
     const out = parseJSON(text);
     if (!out) return res.status(502).json({ error: 'AI 답을 읽지 못했어요. 다시 시도해 주세요' });
+    await stat('doc');
     return res.json(out);
   } catch (e) { return res.status(502).json({ error: String(e.message || e) }); }
 }
@@ -67,6 +70,7 @@ async function run(res, content, parts) {
       const j = await r.json(); if (!r.ok) throw new Error(j?.error?.message || 'AI 오류'); text = j.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
     } else return res.status(503).json({ error: 'AI 키가 없어요' });
     const out = parseJSON(text); if (!out) return res.status(502).json({ error: 'AI 답을 읽지 못했어요' });
+    await stat('week');
     return res.json(out);
   } catch (e) { return res.status(502).json({ error: String(e.message || e) }); }
 }
