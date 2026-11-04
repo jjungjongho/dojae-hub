@@ -17,12 +17,23 @@ const PROMPT = (today) => `너는 고교단계 일학습병행 지원단(한양�
 - 개인 이름·전화번호·학생 정보는 넣지 마라. 확실하지 않은 날짜는 만들지 말고 비워라.
 형식: {"summary":"이 공문이 무엇인지 한 줄","notice":{...}|null,"events":[...],"logs":[...]}`;
 
+const WEEK = (today) => `너는 고교단계 일학습병행 지원단(한양여대)의 업무 보조다. 아래는 직원들이 센터장에게 보낸 주간 업무 일정 메시지들이다(같은 주의 처음 안내와 변경 안내가 섞여 있을 수 있음). 오늘: ${today}.
+학교 id: ${JSON.stringify(SCHOOLS)}
+일정 종류(kind): ${JSON.stringify(KINDS)}
+규칙:
+- 직원별로 나누지 말고 하나로 합친다. 같은 날 같은 활동은 1개로 합친다. 변경 안내가 있으면 나중 메시지를 따른다(빠진 일정은 제외).
+- 직원 이름, 연차, 휴가, 건강검진, 근무예정일 같은 개인 일정은 절대 넣지 않는다.
+- events: 활동마다 1개. title(짧게), date(YYYY-MM-DD, 연도는 오늘 기준), time(""), place, kind, schools(관련 관할학교 id, 없으면 []), prepare(""), public(박람회·홍보 행사면 true).
+- notice: title "이번 주 지원단 일정 (M/D~M/D)", body는 날짜순으로 "11/04(수) 활동, 활동" 한 줄씩, audience "teachers".
+형식: {"summary":"한 줄","notice":{...},"events":[...],"logs":[]}`;
+
 function parseJSON(t) { const m = String(t).match(/\{[\s\S]*\}/); return m ? JSON.parse(m[0]) : null; }
 
 export default async function handler(req, res) {
   if (!process.env.ADMIN_KEY || req.headers['x-admin-key'] !== process.env.ADMIN_KEY) return res.status(401).json({ error: '관리자 키가 필요해요' });
   if (req.method !== 'POST') return res.status(405).end();
   const b = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
+  if (b.text) return run(res, [{ type: 'text', text: WEEK(new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10)) + '\n\n---\n' + String(b.text).slice(0, 20000) }], [{ text: WEEK(new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10)) + '\n\n---\n' + String(b.text).slice(0, 20000) }]);
   const files = (b.files || []).filter(f => f && f.data).slice(0, 5);
   if (!files.length) return res.status(400).json({ error: 'PDF 파일을 올려주세요' });
   const today = new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
@@ -41,6 +52,21 @@ export default async function handler(req, res) {
     } else return res.status(503).json({ error: 'AI 키가 없어요 (Vercel 환경변수 ANTHROPIC_API_KEY 또는 GEMINI_API_KEY)' });
     const out = parseJSON(text);
     if (!out) return res.status(502).json({ error: 'AI 답을 읽지 못했어요. 다시 시도해 주세요' });
+    return res.json(out);
+  } catch (e) { return res.status(502).json({ error: String(e.message || e) }); }
+}
+
+async function run(res, content, parts) {
+  try {
+    let text;
+    if (process.env.ANTHROPIC_API_KEY) {
+      const r = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: { 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' }, body: JSON.stringify({ model: process.env.AI_MODEL || 'claude-sonnet-5-5', max_tokens: 4000, messages: [{ role: 'user', content }] }) });
+      const j = await r.json(); if (!r.ok) throw new Error(j?.error?.message || 'AI 오류'); text = j.content.map(c => c.text || '').join('');
+    } else if (process.env.GEMINI_API_KEY) {
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${process.env.AI_MODEL || 'gemini-2.5-flash'}:generateContent?key=${process.env.GEMINI_API_KEY}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ contents: [{ parts }], generationConfig: { responseMimeType: 'application/json' } }) });
+      const j = await r.json(); if (!r.ok) throw new Error(j?.error?.message || 'AI 오류'); text = j.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
+    } else return res.status(503).json({ error: 'AI 키가 없어요' });
+    const out = parseJSON(text); if (!out) return res.status(502).json({ error: 'AI 답을 읽지 못했어요' });
     return res.json(out);
   } catch (e) { return res.status(502).json({ error: String(e.message || e) }); }
 }
