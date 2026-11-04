@@ -3,12 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>도제학교 지원 허브</title>
+<title>한양여대 지원단</title>
 <meta name="description" content="산학일체형 도제학교 안내, 나에게 맞는 도제학교 찾기, 지원단 공지·일정·지원 요청">
 <meta name="theme-color" content="#0f4c81">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-gov-dynamic-subset.min.css">
 <style>
 :root{--brand:#0f4c81;--brand2:#1a73c9;--accent:#f5b400;--ink:#14213d;--mute:#5b6b82;--line:#e3e8ef;--bg:#f5f7fa;--panel:#fff;--ok:#16a34a;--warn:#d97706;--bad:#dc2626;--r:16px;--sh:0 6px 24px rgba(15,40,80,.08)}
 *{box-sizing:border-box}html,body{margin:0}body{font-family:Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;background:var(--bg);color:var(--ink);font-size:15.5px;line-height:1.55;-webkit-font-smoothing:antialiased}
@@ -54,44 +53,17 @@ footer{border-top:1px solid var(--line);padding:22px 0 40px;color:var(--mute);fo
 .kpi b{display:block;font-size:24px}.kpi span{color:var(--mute);font-size:13px}
 .notice h3{margin:0 0 4px;font-size:16px}.notice p{margin:6px 0 0;white-space:pre-wrap}
 
-/* 공공 스타일 (KRDS 방향): 큰 글씨, 높은 대비, 단정한 색 */
-:root{--brand:#0b3d91;--brand2:#1f5fbf;--accent:#ffd34e;--ink:#111827;--mute:#3f4a5a;--line:#cfd6e0;--bg:#f3f5f8;--r:10px;--sh:none}
-body{font-family:"Pretendard GOV Variable","Pretendard GOV",Pretendard,"Malgun Gothic",sans-serif;font-size:17px;line-height:1.65;word-break:keep-all}
-.gov{background:#0b2a5b;color:#e5ecf6;font-size:14px}.gov .wrap{display:flex;align-items:center;gap:10px;min-height:38px;flex-wrap:wrap}
-.gov b{color:#fff}@media(max-width:600px){.gov .gt{display:none}}.gov .fs{margin-left:auto;display:flex;gap:4px;align-items:center}.gov .fs button{background:#fff;color:#0b2a5b;border:0;border-radius:6px;padding:4px 10px;font-weight:800;cursor:pointer;min-height:30px}
-.gov .fs button[aria-pressed=true]{background:var(--accent)}
-.skip{position:absolute;left:-9999px}.skip:focus{left:12px;top:8px;z-index:99;background:#fff;color:#000;padding:8px 12px;border-radius:6px}
-:focus-visible{outline:3px solid #ff9f1c;outline-offset:2px}
-header.top{background:#fff;border-bottom:2px solid var(--brand);backdrop-filter:none}
-.nav{height:68px}.logo{font-size:19px}.logo i{border-radius:6px}
-.menu a{font-size:16.5px;color:var(--ink);padding:10px 13px;border-radius:6px}.menu a.on{background:var(--brand);color:#fff}
-.hero{background:var(--brand);border-radius:12px}.hero:after{display:none}.hero h1{font-size:30px}.hero p{font-size:18px;opacity:1}
-.btn{border-radius:8px;min-height:48px;padding:12px 20px;font-size:16.5px}.btn.sm{min-height:38px;font-size:15px;border-radius:6px}
-.card{border-radius:var(--r);border:1px solid var(--line)}
-.sec h2{font-size:22px;border-left:5px solid var(--brand);padding-left:10px}
-.quick a{border-top:4px solid var(--brand)}.quick b{font-size:18px}.quick small{font-size:14.5px;color:var(--mute)}
-.tiny{font-size:14.5px}.muted{color:var(--mute)}.pill{font-size:13.5px;border-radius:6px}
-label.f{font-size:15.5px;color:var(--ink)}input,select,textarea{border-radius:6px;border-color:#9aa6b6;min-height:46px;font-size:16.5px}
-table{font-size:15.5px}th{font-size:15px;color:var(--ink);background:#e9eef5}
-.tabs2 button{font-size:15.5px;border-radius:6px;min-height:42px}.chip{font-size:16px}.opt{font-size:17px}
-.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;background:#fff;border:1px solid var(--line);border-radius:var(--r)}
-.stats div{padding:16px;border-right:1px solid var(--line)}.stats div:last-child{border:0}.stats b{display:block;font-size:30px;color:var(--brand)}.stats span{font-size:15px;color:var(--mute)}
-@media(max-width:760px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.stats div:nth-child(2){border-right:0}.stats div{border-bottom:1px solid var(--line)}}
-footer{background:#1f2937;color:#d1d5db;font-size:14.5px;border:0;line-height:1.8}footer b{color:#fff}footer a{color:#fff;text-decoration:underline}
-@media print{.gov,header.top,footer,.btn{display:none!important}body{background:#fff;font-size:12pt}.card{box-shadow:none;break-inside:avoid}}
 </style>
 </head>
 <body>
-<a class="skip" href="#app">본문 바로가기</a>
-<div class="gov"><div class="wrap"><span class="gt"><b>고교단계 일학습병행</b> 산학일체형 도제학교 지원 사이트</span><div class="fs" role="group" aria-label="글자 크기"><span>글자 크기</span><button data-fs="1" aria-pressed="true">보통</button><button data-fs="1.15">크게</button><button data-fs="1.3">아주 크게</button></div></div></div>
 <header class="top"><div class="wrap nav">
-  <a class="logo" href="#/"><i>도</i><span>도제학교 지원 허브</span></a>
+  <a class="logo" href="#/"><i>도</i><span>한양여대 지원단</span></a>
   <nav class="menu" id="menu">
     <a href="#/find">학교 찾기</a><a href="#/notice">공지</a><a href="#/events">일정</a><a href="#/news">지원단 소식</a><a href="#/about">지원단 소개</a><a href="#/teacher">선생님</a><a href="#/admin">지원단</a>
   </nav>
 </div></header>
 <main class="wrap" id="app"></main>
-<footer><div class="wrap"><b>한양여자대학교 고교단계 일학습병행 지원단</b><br>산학일체형 도제학교 운영 지원 · 학습기업 발굴 · 컨설팅 · 홍보<br>이 사이트는 고교단계 일학습병행(산학일체형 도제학교) 지원 사업의 일환으로 운영됩니다.<br>개인정보: 상담 신청 시 보호자 동의를 받은 최소 정보(이름·연락처)만 받고, 상담 목적 외에는 쓰지 않습니다.<br><a href="https://blog.naver.com/support123--" target="_blank" rel="noopener">지원단 블로그</a> · © <span id="ym"></span></div></footer>
+<footer><div class="wrap">고교단계 일학습병행 지원단 · 산학일체형 도제학교 지원 · 문의: 지원단 기관 메일 <span id="ym"></span></div></footer>
 <div class="toast" id="toast" hidden></div>
 <script>
 /* ===== data ===== */
@@ -134,11 +106,10 @@ function season(){const m=new Date().getMonth()+1;
 /* ===== pages ===== */
 function home(){const s=season(),ev=PUB.events.filter(e=>e.date>=new Date().toISOString().slice(0,10)).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,4);
  app.innerHTML=`<section class="hero"><span class="tag">${s.tag}</span><h1>${s.h}</h1><p>${s.p}</p><a class="btn y" href="${s.cta[0]}">${s.cta[1]}</a></section>
- <div class="sec grid g4 quick">${[['#/find','🔍','학교 찾기','분야·지역으로 찾기'],['#/notice','📢','공지사항','지원단 안내'],['#/events','📅','행사 일정','설명회·연수·캠프'],['#/teacher','👩‍🏫','선생님 공간','확인·제출·요청']].map(q=>`<a class="card" href="${q[0]}"><span>${q[1]}</span><b>${q[2]}</b><small>${q[3]}</small></a>`).join('')}</div>${statsBand()}
- <div class="sec grid g2"><div><h2>다가오는 일정</h2><div class="card list">${ev.length?ev.map(evRow).join(''):'<div class="empty">예정된 공개 일정이 없어요</div>'}</div></div>
- <div><h2>최근 공지 <small><a href="#/notice">전체 보기</a></small></h2><div class="card list">${PUB.notices.slice(0,5).map(n=>`<div class="it"><div style="flex:1"><b>${esc(n.title)}</b><div class="tiny muted">${n.at.slice(0,10)}${n.deadline?' · 마감 '+n.deadline:''}</div></div>${n.deadline?`<span class="pill w">${dday(n.deadline)}</span>`:''}</div>`).join('')||'<div class="empty">공지가 없어요</div>'}</div></div></div>
- <div class="sec"><h2>지원단 소식 <small><a href="#/news">전체 보기</a></small></h2><div id="hn"><div class="card empty">불러오는 중…</div></div></div><div class="sec"><h2>관할 도제학교 ${SCHOOLS.length}곳</h2><div class="grid g3">${SCHOOLS.map(s=>schoolCard(s)).join('')}</div></div>`;homeNews()}
-const statsBand=()=>{const st=PUB.stats||{},c=st.cats||{},g=k=>Object.entries(c).filter(([n])=>k.some(w=>n.includes(w))).reduce((a,[,v])=>a+v,0);return `<div class="sec"><h2>${st.year||new Date().getFullYear()}년 지원단 활동</h2><div class="stats"><div><b>${SCHOOLS.length}</b><span>관할 도제학교</span></div><div><b>${g(['기업 발굴','학습기업'])}</b><span>학습기업 발굴 지원</span></div><div><b>${g(['컨설팅','모니터링'])}</b><span>컨설팅·모니터링</span></div><div><b>${st.total||0}</b><span>전체 지원 활동</span></div></div></div>`};
+ <div class="sec grid g4 quick">${[['#/find','🔍','학교 찾기','분야·지역으로 찾기'],['#/notice','📢','공지사항','지원단 안내'],['#/events','📅','행사 일정','설명회·연수·캠프'],['#/teacher','👩‍🏫','선생님 공간','확인·제출·요청']].map(q=>`<a class="card" href="${q[0]}"><span>${q[1]}</span><b>${q[2]}</b><small>${q[3]}</small></a>`).join('')}</div>
+ <div class="sec grid g2"><div><h2>📅 다가오는 일정</h2><div class="card list">${ev.length?ev.map(evRow).join(''):'<div class="empty">예정된 공개 일정이 없어요</div>'}</div></div>
+ <div><h2>📢 최근 공지 <small><a href="#/notice">전체 보기</a></small></h2><div class="card list">${PUB.notices.slice(0,5).map(n=>`<div class="it"><div style="flex:1"><b>${esc(n.title)}</b><div class="tiny muted">${n.at.slice(0,10)}${n.deadline?' · 마감 '+n.deadline:''}</div></div>${n.deadline?`<span class="pill w">${dday(n.deadline)}</span>`:''}</div>`).join('')||'<div class="empty">공지가 없어요</div>'}</div></div></div>
+ <div class="sec"><h2>📰 지원단 소식 <small><a href="#/news">전체 보기</a></small></h2><div id="hn"><div class="card empty">불러오는 중…</div></div></div><div class="sec"><h2>🏫 관할 도제학교 ${SCHOOLS.length}곳</h2><div class="grid g3">${SCHOOLS.map(s=>schoolCard(s)).join('')}</div></div>`;homeNews()}
 const evRow=e=>{const[d,w]=fmtD(e.date);return`<div class="it"><div class="date">${d}<small>(${w})</small></div><div style="flex:1"><b>${esc(e.title)}</b><div class="tiny muted">${esc(e.kind||'')} ${e.time?'· '+esc(e.time):''} ${e.place?'· '+esc(e.place):''}</div>${e.prepare?`<div class="tiny">준비: ${esc(e.prepare)}</div>`:''}</div><button class="btn g sm" onclick='ics(${JSON.stringify(e).replace(/'/g,"&#39;")})'>📆</button></div>`};
 const schoolCard=(s,why)=>`<div class="card school"><div><span class="pill b">${s.region}</span></div><h3>${s.name}</h3>${s.sub?`<div class="tiny muted">${s.sub}</div>`:''}${why?`<div class="why">✓ ${why}</div>`:''}<div class="chips">${s.jobs.map(j=>`<span class="pill">${j}</span>`).join('')}</div><div style="display:flex;gap:8px;margin-top:4px"><a class="btn sm" href="#/consult/${s.id}">입학상담 신청</a><a class="btn g sm" target="_blank" rel="noopener" href="https://search.naver.com/search.naver?query=${encodeURIComponent(s.name)}">학교 정보</a><button class="btn g sm" onclick="shareSchool('${s.id}')">공유</button></div></div>`;
 function shareSchool(id){const s=SCHOOLS.find(x=>x.id===id),url=location.origin+'/#/consult/'+id,t=s.name+' 도제학교 안내';if(navigator.share)navigator.share({title:t,url}).catch(()=>{});else copy(t+'\n'+url)}
@@ -282,7 +253,7 @@ function aConsult(){ap().innerHTML=`<div class="card"><div class="tablewrap"><ta
 function aSet(){ap().innerHTML=`<div class="grid g2"><div class="card"><h3 style="margin-top:0">🙋 요청 종류 켜기/끄기</h3>${REQ.map(r=>`<label style="display:flex;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line)"><input type="checkbox" data-tg="${r[0]}" ${A.toggles[r[0]]!==false?'checked':''} style="width:auto"> ${r[1]} ${r[2]}</label>`).join('')}<button class="btn" id="tgs" style="margin-top:12px">저장</button></div>
  <div class="card"><h3 style="margin-top:0">🔑 학교 코드</h3><p class="tiny muted">선생님이 ‘선생님 공간’에 들어갈 때 쓰는 코드예요. 단톡방으로 각 학교에 보내세요.</p><div class="tablewrap"><table>${SCHOOLS.map(s=>`<tr><td>${s.name}</td><td><b>${A.codes[s.id]}</b></td></tr>`).join('')}</table></div><button class="btn y" id="cpc" style="margin-top:12px">학교 코드 안내 문구 복사</button></div></div>`;
  $('#tgs').onclick=async()=>{const t={};ap().querySelectorAll('[data-tg]').forEach(c=>t[c.dataset.tg]=c.checked);await api('toggles',t,H());toast('저장했어요');A.toggles=t};
- $('#cpc').onclick=()=>copy(`🏫 [도제학교 지원 허브] 선생님 공간 안내\n아래 주소에서 학교 코드로 들어오시면 공지 확인, 우리 학교 일정, 지원 요청을 하실 수 있어요.\n👉 ${location.origin}/#/teacher\n\n${SCHOOLS.map(s=>s.name+' : '+A.codes[s.id]).join('\n')}`)}
+ $('#cpc').onclick=()=>copy(`🏫 [한양여대 지원단] 선생님 공간 안내\n아래 주소에서 학교 코드로 들어오시면 공지 확인, 우리 학교 일정, 지원 요청을 하실 수 있어요.\n👉 ${location.origin}/#/teacher\n\n${SCHOOLS.map(s=>s.name+' : '+A.codes[s.id]).join('\n')}`)}
 /* ===== router ===== */
 function go(h){location.hash=h}
 async function route(){const h=location.hash.replace(/^#\/?/,'');const [p,q]=h.split('/');
@@ -292,7 +263,6 @@ async function route(){const h=location.hash.replace(/^#\/?/,'');const [p,q]=h.s
 window.addEventListener('hashchange',()=>{route();scrollTo(0,0)});
 $('#ym').textContent='© '+new Date().getFullYear();
 (async()=>{try{PUB=await api('public')}catch(e){console.warn(e)}route()})();
-(()=>{const set=v=>{document.body.style.zoom=v;document.querySelectorAll('[data-fs]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.fs==v))};let v='1';try{v=localStorage.getItem('fs')||'1'}catch{}set(v);document.querySelectorAll('[data-fs]').forEach(b=>b.onclick=()=>{set(b.dataset.fs);try{localStorage.setItem('fs',b.dataset.fs)}catch{}})})();
 </script>
 </body>
 </html>
