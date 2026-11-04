@@ -174,7 +174,15 @@ async function admin(){const key=st.get('dj-admin');if(!key)return app.innerHTML
 const H=()=>({'x-admin-key':st.get('dj-admin')});const ap=()=>$('#ap');
 
 function aAI(){ap().innerHTML=`<div class="card"><h3 style="margin-top:0">📄 공문 올리기</h3><p class="muted tiny">공문 PDF와 <b>붙임 파일(한글·엑셀 등)</b>을 한꺼번에 고르세요. AI가 PDF 공문을 한 건씩 읽어 공지·일정·실적을 만들고, 붙임 파일은 이름이 비슷한 공문에 자동으로 붙여요(바꿀 수 있어요). 내부 행정 공문은 ‘지원단 내부’로 저장돼 학교에는 안 보여요. (파일 1개당 3MB)</p>
- <input type="file" id="af" multiple><button class="btn" id="ag" style="margin-top:10px">AI로 읽기</button></div><div id="ar" class="sec"></div>`;
+ <input type="file" id="af" multiple><button class="btn" id="ag" style="margin-top:10px">AI로 읽기</button></div>
+ <div class="card" style="margin-top:12px"><h3 style="margin-top:0">🗓️ 이번 주 지원단 일정 붙여넣기</h3><p class="muted tiny">센터장님께 보낸 주간 일정 메시지를 그대로 붙여넣으세요(변경 안내까지 같이 붙여도 돼요). 사람별로 나누지 않고 합쳐서, 개인 일정(연차 등)은 빼고 등록해요.</p><textarea id="wt" rows="8" style="width:100%"></textarea><button class="btn" id="wg" style="margin-top:10px">AI로 정리</button><div id="wr"></div></div><div id="ar" class="sec"></div>`;
+ $('#wg').onclick=async()=>{const t=$('#wt').value.trim();if(!t)return toast('일정을 붙여넣어 주세요');$('#wr').innerHTML='<p class="tiny muted">🤖 정리 중…</p>';
+  try{const r=await fetch('/api/ai',{method:'POST',headers:{'Content-Type':'application/json',...H()},body:JSON.stringify({text:t})});const j=await r.json();if(!r.ok)throw new Error(j.error);const n=j.notice||{},E=j.events||[];
+   $('#wr').innerHTML=`<label class="f">공지 제목<input id="wnt" value="${esc(n.title||'이번 주 지원단 일정')}"></label><label class="f">공지 내용<textarea id="wnb" rows="8">${esc(n.body||'')}</textarea></label><label style="display:flex;gap:8px;font-size:13.5px"><input type="checkbox" id="wn" checked style="width:auto"> 선생님께 공지로도 올리기</label><div class="tiny muted" style="margin:10px 0 4px">일정 ${E.length}건</div>${E.map((e,i)=>`<label style="display:flex;gap:8px;font-size:13.5px;margin:4px 0"><input type="checkbox" class="we" data-i="${i}" checked style="width:auto"> ${esc(e.date)} ${esc(e.title)}${e.place?' · '+esc(e.place):''}</label>`).join('')}<button class="btn w" id="ws" style="margin-top:10px">등록</button>`;
+   $('#ws').onclick=async()=>{$('#ws').disabled=true;let c=0;try{if($('#wn').checked){await api('notice',{title:$('#wnt').value,body:$('#wnb').value,audience:'teachers',files:[]},H());c++}
+    for(const el of document.querySelectorAll('.we:checked')){const e=E[+el.dataset.i];await api('event',{...e,schools:(e.schools||[]).filter(x=>SCHOOLS.some(s=>s.id===x))},H());c++}
+    toast(c+'건 등록했어요');setTimeout(admin,900)}catch(e){toast(e.message);$('#ws').disabled=false}}}
+  catch(e){$('#wr').innerHTML='<p class="tiny">⚠️ '+esc(e.message)+'</p>'}};
  $('#ag').onclick=async()=>{const all=[...$('#af').files].slice(0,40);if(!all.length)return toast('파일을 골라주세요');
   const pdfs=all.filter(f=>/\.pdf$/i.test(f.name)),others=all.filter(f=>!/\.pdf$/i.test(f.name));
   if(!pdfs.length)return toast('공문 PDF가 1개 이상 있어야 해요 (한글 공문은 PDF로 저장)');
