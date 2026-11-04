@@ -2,6 +2,7 @@
 // Admin only. Uses ANTHROPIC_API_KEY (Claude) if set, otherwise GEMINI_API_KEY.
 import { hasRedis, cmd } from './_redis.js';
 const stat = async k => { try { if (hasRedis()) await cmd('HINCRBY', 'hub:aistat', new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 7) + ':' + k, '1'); } catch {} };
+import { schoolOf } from './hub.js';
 export const config = { api: { bodyParser: { sizeLimit: '4.5mb' } } };
 
 const SCHOOLS = { ggm: '경기기계공업고등학교', kwai: '광운인공지능고등학교', dukil: '덕일전자공업고등학교', mungok: '문곡고등학교', magnet: '서울매그넷고등학교', design: '서울디자인고등학교', seoil: '서일문화예술고등학교', yongsan: '용산철도고등학교', eunpyeong: '은평메디텍고등학교', mobility: '한국모빌리티고등학교(구 의정부공업고등학교)' };
@@ -32,7 +33,11 @@ const WEEK = (today) => `너는 고교단계 일학습병행 지원단(한양여
 function parseJSON(t) { const m = String(t).match(/\{[\s\S]*\}/); return m ? JSON.parse(m[0]) : null; }
 
 export default async function handler(req, res) {
-  if (!process.env.ADMIN_KEY || req.headers['x-admin-key'] !== process.env.ADMIN_KEY) return res.status(401).json({ error: '관리자 키가 필요해요' });
+  const isAdmin = process.env.ADMIN_KEY && req.headers['x-admin-key'] === process.env.ADMIN_KEY;
+  const school = schoolOf(req.headers['x-school-code']);
+  const bb = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
+  if (!isAdmin && school && ['check', 'ask', 'report'].includes(bb.mode)) return schoolAI(req, res, school, bb);
+  if (!isAdmin) return res.status(401).json({ error: '로그인이 필요해요' });
   if (req.method !== 'POST') return res.status(405).end();
   const b = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
   if (b.text) return run(res, [{ type: 'text', text: WEEK(new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10)) + '\n\n---\n' + String(b.text).slice(0, 20000) }], [{ text: WEEK(new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10)) + '\n\n---\n' + String(b.text).slice(0, 20000) }]);
@@ -59,7 +64,7 @@ export default async function handler(req, res) {
   } catch (e) { return res.status(502).json({ error: String(e.message || e) }); }
 }
 
-async function run(res, content, parts) {
+async function run(res, content, parts, key) {
   try {
     let text;
     if (process.env.ANTHROPIC_API_KEY) {
@@ -70,7 +75,50 @@ async function run(res, content, parts) {
       const j = await r.json(); if (!r.ok) throw new Error(j?.error?.message || 'AI 오류'); text = j.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
     } else return res.status(503).json({ error: 'AI 키가 없어요' });
     const out = parseJSON(text); if (!out) return res.status(502).json({ error: 'AI 답을 읽지 못했어요' });
-    await stat('week');
+    await stat(key || 'week');
     return res.json(out);
   } catch (e) { return res.status(502).json({ error: String(e.message || e) }); }
+}
+
+const KIND_HINT = {
+  '자체점검표': '학교명, 점검일, 점검자, 모든 점검 항목의 체크 여부, 미흡 항목의 개선 계획, 서명·날인',
+  '날인지·서명지': '행사명, 날짜, 참석자 소속, 서명 칸 누락, 날인 여부',
+  '결과보고서': '행사명, 일시, 장소, 대상·참석 인원, 추진 내용, 성과(숫자), 개선점, 사진 등 증빙, 작성일·작성자',
+  '신청서': '신청 기관, 담당자, 신청 내용, 날짜, 서명',
+};
+async function schoolAI(req, res, school, b) {
+  const day = new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
+  if (hasRedis()) { const n = await cmd('HINCRBY', 'hub:ailimit:' + day, school, '1'); await cmd('EXPIRE', 'hub:ailimit:' + day, '172800'); if (+n > 40) return res.status(429).json({ error: '오늘 AI 사용 횟수를 다 썼어요. 내일 다시 써주세요' }); }
+  const files = (b.files || []).filter(f => f && f.data).slice(0, 6);
+  const docs = files.map(f => /pdf/i.test(f.type || f.name) ? { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: f.data } } : { type: 'image', source: { type: 'base64', media_type: /png/i.test(f.type) ? 'image/png' : 'image/jpeg', data: f.data } });
+  const parts = files.map(f => ({ inline_data: { mime_type: /pdf/i.test(f.type || f.name) ? 'application/pdf' : (/png/i.test(f.type) ? 'image/png' : 'image/jpeg'), data: f.data } }));
+  const base = `너는 한양여대 고교단계 일학습병행 지원단이 산학일체형 도제학교 선생님을 돕기 위해 만든 AI 도우미다. 오늘: ${day}. 쉬운 존댓말로 답한다. 학생 개인정보는 출력하지 않는다.`;
+  let prompt;
+  if (b.mode === 'check') {
+    if (!files.length) return res.status(400).json({ error: 'PDF나 사진을 올려주세요 (한글 파일은 PDF로 저장)' });
+    prompt = `${base}
+선생님이 지원단에 제출하기 전에 "${b.kind || '서류'}"를 점검해 달라고 했다. 이 서류에 보통 필요한 항목: ${KIND_HINT[b.kind] || '제목, 날짜, 작성자, 주요 내용, 서명'}.
+빠진 칸, 날짜 오류(요일 불일치·미래 날짜·기간 역전), 합계 오류, 서명·날인 누락, 학교명 불일치를 찾아라. 확실하지 않으면 "확인 필요"로 적는다.
+JSON만: {"ok":true|false,"summary":"한 줄 총평","issues":[{"where":"위치","problem":"문제","fix":"고치는 방법"}]}`;
+  } else if (b.mode === 'ask') {
+    const q = String(b.q || '').slice(0, 1500); if (!q.trim()) return res.status(400).json({ error: '질문을 입력해 주세요' });
+    let ctx = '';
+    try { if (hasRedis()) { const h = (await cmd('HGETALL', 'hub:notice')) || []; const N = []; for (let i = 0; i < h.length; i += 2) { try { const n = JSON.parse(h[i + 1]); if (n.audience !== 'internal') N.push(n); } catch {} } ctx = N.sort((a, c) => String(c.at).localeCompare(String(a.at))).slice(0, 25).map(n => `- [${String(n.at).slice(0, 10)}] ${n.title}: ${String(n.body).slice(0, 400)}`).join('\n'); } } catch {}
+    prompt = `${base}
+아래는 지원단이 올린 최근 공지다. 공지에 근거가 있으면 그것을 우선해 답하고, 일반적인 일학습병행(도제학교) 운영 지식으로 답할 때는 "일반적인 기준"이라고 밝혀라. 규정·서식·기한처럼 틀리면 곤란한 내용은 "정확한 건 지원단이나 공단 지침으로 꼭 확인해 주세요"를 붙여라. 모르면 지어내지 말고 "지원단에 요청하기로 물어봐 주세요"라고 해라.
+[지원단 공지]
+${ctx || '(없음)'}
+[질문]
+${q}
+JSON만: {"answer":"답변(5~10줄)","sure":true|false}`;
+  } else {
+    if (!files.length && !String(b.memo || '').trim()) return res.status(400).json({ error: '사진이나 메모를 넣어주세요' });
+    prompt = `${base}
+선생님이 올린 행사 사진과 메모로 학교 내부 결과보고서 초안을 만든다. 메모에 없는 숫자·이름·날짜는 지어내지 말고 "○○"로 비워둔다. 사진에서 확인되는 장면만 묘사한다.
+[메모]
+${String(b.memo || '').slice(0, 2000)}
+형식: 1. 개요(행사명·일시·장소·대상·인원) 2. 추진 내용 3. 성과 4. 개선점 및 향후 계획.
+JSON만: {"title":"보고서 제목","body":"보고서 본문(줄바꿈 포함)"}`;
+  }
+  return run(res, [...docs, { type: 'text', text: prompt }], [...parts, { text: prompt }], 's-' + b.mode);
 }
